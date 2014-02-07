@@ -231,15 +231,15 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 --
 
 myTabConfig = defaultTheme { fontName = "xft: Ubuntu-10"
-                           -- , activeColor         = "#272822" -- "#272822"
-                           -- , inactiveColor       = "#272822" -- "#272822"
-                           -- , urgentColor         = "#C4BE89" -- "#C4BE89"
-                           -- , activeBorderColor   = "#282923" -- "#282923"
-                           -- , inactiveBorderColor = "#282923" -- "#282923"
-                           -- , urgentBorderColor   = "#C4BE89" -- "#C4BE89"
-                           -- , activeTextColor     = "#A6E22E" -- "#A6E22E"
-                           -- , inactiveTextColor   = "#6D8E29" -- "#6D8E290"
-                           -- , urgentTextColor     = "#6D8E29" -- "#6D8E29"
+                           , activeColor         = solarizedBase01 -- "#272822"
+                           , inactiveColor       = solarizedBase02 -- "#272822"
+                           , urgentColor         = solarizedBase03 -- "#C4BE89"
+                           , activeBorderColor   = solarizedBase00 -- "#282923"
+                           , inactiveBorderColor = solarizedBase01 -- "#282923"
+                           , urgentBorderColor   = solarizedBase03 -- "#C4BE89"
+                           , activeTextColor     = solarizedRed -- "#A6E22E"
+                           , inactiveTextColor   = solarizedOrange -- "#6D8E290"
+                           , urgentTextColor     = solarizedGreen -- "#6D8E29"
                            , decoWidth           = 100
                            , decoHeight          = 17
                            , windowTitleAddons   = []
