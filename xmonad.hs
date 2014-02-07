@@ -2,6 +2,7 @@
 -- xmonad config file for 
 --
 
+import Solarized
 import XMonad
 import Data.Monoid
 import System.Exit
@@ -15,8 +16,10 @@ import XMonad.Layout.Tabbed
 import XMonad.Layout.ShowWName    -- for showing workspace when switching
 import XMonad.Layout.NoBorders    -- for no border in fullscreen window
 import XMonad.Hooks.ManageHelpers -- for fullscreen support
-
-
+import XMonad.Prompt.Workspace
+import XMonad.Prompt
+import XMonad.Layout.MagicFocus
+import XMonad.Layout.Named
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -28,7 +31,7 @@ myTerminal      = "mate-terminal"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
-myFocusFollowsMouse = True
+myFocusFollowsMouse = False -- True
 
 -- Width of the window border in pixels.
 --
@@ -40,22 +43,6 @@ myBorderWidth   = 1
 -- "windows key" is usually mod4Mask.
 --
 myModMask       = mod4Mask
-
--- The mask for the numlock key. Numlock status is "masked" from the
--- current modifier status, so the keybindings will work with numlock on or
--- off. You may need to change this on some systems.
---
--- You can find the numlock modifier by running "xmodmap" and looking for a
--- modifier with Num_Lock bound to it:
---
--- > $ xmodmap | grep Num
--- > mod2        Num_Lock (0x4d)
---
--- Set numlockMask = 0 if you don't have a numlock key, or want to treat
--- numlock status separately.
---
-
-myNumlockMask   = mod2Mask
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -71,10 +58,16 @@ myNumlockMask   = mod2Mask
 
 myWorkspaces = ["1-Main", "2-Temp", "3-Work", "4-Misc", "5-IRC", "6-Media", "7", "8", "9"]
 
+-- Specify a workspace(s) to use focusFollowsMouse on (such as for use with gimp):
+-- We will disable follow-mouse on all but the last:
+-- followEventHook = followOnlyIf $ disableFollowOnWS allButLastWS
+--    where allButLastWS = init allWS
+--          allWS        = workspaces gnomeConfig
+
 -- Border colors for unfocused and focused windows, respectively.
 --
-myNormalBorderColor  = "#000000"
-myFocusedBorderColor = "#FF0000"
+myNormalBorderColor  = solarizedBase01 -- "#000000"
+myFocusedBorderColor = solarizedRed    -- "#FF0000"
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -90,7 +83,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
 
     -- launch a script to rotate the screen
-    , ((modm,               xK_slash ), spawn "sh /home/kit/.scripts/toggle_rotate.sh"  )
+    -- , ((modm,               xK_slash ), spawn "sh /home/kit/.scripts/toggle_rotate.sh"  )
 
     -- launch gridselect
     , ((modm, xK_g), goToSelected defaultGSConfig)
@@ -108,7 +101,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_space ), setLayout $ XMonad.layoutHook conf)
 
     -- Resize viewed windows to the correct size
-    , ((modm .|. shiftMask,               xK_n     ), refresh)
+    , ((modm .|. shiftMask, xK_n     ), refresh)
 
     -- Move focus to the next window
     , ((modm,               xK_Tab   ), windows W.focusDown)
@@ -146,14 +139,15 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Deincrement the number of windows in the master area
     , ((modm              , xK_period), sendMessage (IncMasterN (-1)))
 
-    -- Lock the screen
-    , ((modm .|. shiftMask, xK_l     ), spawn "mate-screensaver-command -l")
+    -- Prompt for a workspace
+    , ((modm .|. shiftMask, xK_t     ), workspacePrompt defaultXPConfig (windows . W.shift))
 
+    -- Lock the screen
+    --, ((modm .|. shiftMask, xK_l     ), spawn "mate-screensaver-command -l")
 
     -- Toggle the status bar gap
     -- Use this binding with avoidStruts from Hooks.ManageDocks.
     -- See also the statusBar function from Hooks.DynamicLog.
-    --
      , ((modm              , xK_bracketleft), sendMessage ToggleStruts)
 
     -- Quit xmonad
@@ -166,8 +160,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xK_Print), spawn "mate-screenshot")
 
     -- Run printscreen in interactive mode
-    , ((shiftMask, xK_Print), spawn "mate-screenshot -i")
-    ]
+    , ((shiftMask, xK_Print), spawn "mate-screenshot -i")]
     ++
 
     --
@@ -186,7 +179,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
                                                --     xK_b,
                                                --     xK_n,
                                                --     xK_m])
-    , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]] ++
+    , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]] 
+    ++
 
     --
     -- mod-{w,e,r}, Switch to physical/Xinerama screens 1, 2, or 3
@@ -201,6 +195,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
 --
+
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- mod-button1, Set the window to floating mode and move by dragging
@@ -236,23 +231,33 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 --
 
 myTabConfig = defaultTheme { fontName = "xft: Ubuntu-10"
-                           , activeColor         = "#272822"
-                           , inactiveColor       = "#272822"
-                           , urgentColor         = "#C4BE89"
-                           , activeBorderColor   = "#282923"
-                           , inactiveBorderColor = "#282923"
-                           , urgentBorderColor   = "#C4BE89"
-                           , activeTextColor     = "#A6E22E"
-                           , inactiveTextColor   = "#6D8E29"
-                           , urgentTextColor     = "#6D8E29"
+                           -- , activeColor         = "#272822" -- "#272822"
+                           -- , inactiveColor       = "#272822" -- "#272822"
+                           -- , urgentColor         = "#C4BE89" -- "#C4BE89"
+                           -- , activeBorderColor   = "#282923" -- "#282923"
+                           -- , inactiveBorderColor = "#282923" -- "#282923"
+                           -- , urgentBorderColor   = "#C4BE89" -- "#C4BE89"
+                           -- , activeTextColor     = "#A6E22E" -- "#A6E22E"
+                           -- , inactiveTextColor   = "#6D8E29" -- "#6D8E290"
+                           -- , urgentTextColor     = "#6D8E29" -- "#6D8E29"
                            , decoWidth           = 100
                            , decoHeight          = 17
                            , windowTitleAddons   = []
                            , windowTitleIcons    = []
 }
 
-preLayout = avoidStruts $ desktopLayoutModifiers $ tiled ||| Mirror tiled ||| (tabbed shrinkText myTabConfig) ||| Full
+preLayout = avoidStruts $ desktopLayoutModifiers 
+            $   tiled 
+            ||| Mirror tiled 
+            ||| mfocus  -- TODO: Find a way to use this with followmouse = true
+            ||| (tabbed shrinkText myTabConfig) 
+            ||| Full
+
   where
+    
+    -- Magic Focus
+    mfocus = named "Magic Focus" (magicFocus (Mirror tiled))
+    
     -- default tiling algorithm partitions the screen into two panes
     tiled   = Tall nmaster delta ratio
 
@@ -260,12 +265,15 @@ preLayout = avoidStruts $ desktopLayoutModifiers $ tiled ||| Mirror tiled ||| (t
     nmaster = 1
 
     -- Default proportion of screen occupied by master pane
-    ratio   = 3/4
+    ratio   = 2/3
 
     -- Percent of screen to increment by when resizing panes
     delta   = 3/100
 
+-- Avoid borders when fullscreen
 myLayout = smartBorders (preLayout)
+
+-- ###
 
 ------------------------------------------------------------------------
 -- Window rules:
@@ -286,6 +294,7 @@ myLayout = smartBorders (preLayout)
 fullManageHook = composeAll [
                 isFullscreen --> doFullFloat
                ]
+
 myManageHook = fullManageHook <+> manageHook gnomeConfig <+> manageDocks
                
 ------------------------------------------------------------------------
@@ -300,7 +309,7 @@ myManageHook = fullManageHook <+> manageHook gnomeConfig <+> manageDocks
 -- It will add EWMH event handling to your custom event hooks by
 -- combining them with ewmhDesktopsEventHook.
 --
---myEventHook = mempty
+myHandleEventHook = fullscreenEventHook -- <+> promoteWarp -- TODO: See magicFocus layout
 
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -363,7 +372,7 @@ defaults = gnomeConfig {
       -- hooks, layouts
         layoutHook         = showWName myLayout,
         manageHook         = myManageHook,
-        handleEventHook    = fullscreenEventHook,
+        handleEventHook    = myHandleEventHook,
         startupHook        = myStartupHook
         {-logHook          = myLogHook, -} 
     }

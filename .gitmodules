@@ -1,0 +1,6 @@
+[submodule "xmonad-log-applet"]
+	path = xmonad-log-applet
+	url = git@github.com:edran/xmonad-log-applet.git
+[submodule "lib/solarized"]
+	path = lib/solarized
+	url = git@github.com:edran/solarized-xmonad.git
