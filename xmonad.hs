@@ -1,8 +1,8 @@
 --
--- xmonad config file for 
+-- xmonad config file for
 --
 
-import Solarized
+-- import Solarized
 import XMonad
 import Data.Monoid
 import System.Exit
@@ -15,6 +15,7 @@ import XMonad.Config.Desktop
 import XMonad.Layout.Tabbed
 import XMonad.Layout.ShowWName    -- for showing workspace when switching
 import XMonad.Layout.NoBorders    -- for no border in fullscreen window
+import XMonad.Layout.Grid
 import XMonad.Hooks.ManageHelpers -- for fullscreen support
 import XMonad.Prompt.Workspace
 import XMonad.Prompt
@@ -27,11 +28,11 @@ import qualified Data.Map        as M
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "mate-terminal"
+myTerminal      = "terminator"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
-myFocusFollowsMouse = False -- True
+myFocusFollowsMouse = True -- True
 
 -- Width of the window border in pixels.
 --
@@ -66,8 +67,8 @@ myWorkspaces = ["1-Main", "2-Temp", "3-Work", "4-Misc", "5-IRC", "6-Media", "7",
 
 -- Border colors for unfocused and focused windows, respectively.
 --
-myNormalBorderColor  = solarizedBase01 -- "#000000"
-myFocusedBorderColor = solarizedRed    -- "#FF0000"
+myNormalBorderColor  = "#FFFFFF"
+myFocusedBorderColor = "#FF0000"
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -78,8 +79,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf++" --working-directory=~")
 
     -- launch dmenu
-    , ((modm,               xK_p     ), spawn "dmenu_run -nf \"#6D8E29\" -nb \"#272822\" -fn \"Ubuntu-10\" -sf \"#a6e22e\" -sb \"#272822\"")
-    , ((modm .|. shiftMask, xK_p     ), spawn "dmenu_run -nf \"#6D8E29\" -nb \"#272822\" -fn \"Ubuntu-10\" -sf \"#a6e22e\" -sb \"#272822\" -b")
+    , ((modm,               xK_p     ), spawn "dmenu_run -nf \"#839496\" -nb \"#002b36\" -fn \"Droid Sans Mono-9\" -sf \"#dc322f\" -sb \"#073642\"")
+    , ((modm .|. shiftMask, xK_p     ), spawn "sh /home/edran/.xmonad/dmenufm.sh")
 
 
     -- launch a script to rotate the screen
@@ -151,7 +152,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
      , ((modm              , xK_bracketleft), sendMessage ToggleStruts)
 
     -- Quit xmonad
-    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+    , ((modm .|. shiftMask, xK_q     ), io exitSuccess)
 
     -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
@@ -179,7 +180,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
                                                --     xK_b,
                                                --     xK_n,
                                                --     xK_m])
-    , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]] 
+    , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
     ++
 
     --
@@ -188,10 +189,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
 
     [((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
-     | (key, sc) <- zip [xK_w, xK_e, xK_r] [0..]
+     | (key, sc) <- zip [xK_e, xK_w, xK_r] [0..]
     , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
 
-    
+
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
 --
@@ -231,33 +232,33 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 --
 
 myTabConfig = defaultTheme { fontName = "xft: Ubuntu-10"
-                           , activeColor         = solarizedBase01 -- "#272822"
-                           , inactiveColor       = solarizedBase02 -- "#272822"
-                           , urgentColor         = solarizedBase03 -- "#C4BE89"
-                           , activeBorderColor   = solarizedBase00 -- "#282923"
-                           , inactiveBorderColor = solarizedBase01 -- "#282923"
-                           , urgentBorderColor   = solarizedBase03 -- "#C4BE89"
-                           , activeTextColor     = solarizedRed -- "#A6E22E"
-                           , inactiveTextColor   = solarizedOrange -- "#6D8E290"
-                           , urgentTextColor     = solarizedGreen -- "#6D8E29"
+                           , activeColor         =  "#272822"
+                           , inactiveColor       =  "#272822"
+                           , urgentColor         =  "#C4BE89"
+                           , activeBorderColor   =  "#282923"
+                           , inactiveBorderColor =  "#282923"
+                           , urgentBorderColor   =  "#C4BE89"
+                           , activeTextColor     =  "#A6E22E"
+                           , inactiveTextColor   =  "#6D8E290"
+                           , urgentTextColor     =  "#6D8E29"
                            , decoWidth           = 100
                            , decoHeight          = 17
                            , windowTitleAddons   = []
                            , windowTitleIcons    = []
 }
 
-preLayout = avoidStruts $ desktopLayoutModifiers 
-            $   tiled 
-            ||| Mirror tiled 
-            ||| mfocus  -- TODO: Find a way to use this with followmouse = true
-            ||| (tabbed shrinkText myTabConfig) 
+preLayout = avoidStruts $ desktopLayoutModifiers
+            $   tiled
+            ||| Mirror tiled
+            ||| tabbed shrinkText myTabConfig
+            ||| Grid
             ||| Full
 
   where
-    
+
     -- Magic Focus
     mfocus = named "Magic Focus" (magicFocus (Mirror tiled))
-    
+
     -- default tiling algorithm partitions the screen into two panes
     tiled   = Tall nmaster delta ratio
 
@@ -265,13 +266,14 @@ preLayout = avoidStruts $ desktopLayoutModifiers
     nmaster = 1
 
     -- Default proportion of screen occupied by master pane
-    ratio   = 2/3
+    ratio   = 2/5
 
     -- Percent of screen to increment by when resizing panes
     delta   = 3/100
 
 -- Avoid borders when fullscreen
-myLayout = smartBorders (preLayout)
+
+myLayout = smartBorders preLayout
 
 -- ###
 
@@ -291,12 +293,15 @@ myLayout = smartBorders (preLayout)
 -- 'className' and 'resource' are used below.
 --
 
-fullManageHook = composeAll [
-                isFullscreen --> doFullFloat
-               ]
-
+fullManageHook = composeAll $
+                 [ isFullscreen --> doFullFloat ]
+                 ++[  className =? "Steam"          -->doFloat
+                   ,  className =? "steam"          -->doFloat --bigpicture-mode
+                   ,  className =? "Steam"          -->doIgnore
+                   ,  title     =? "plasma-desktop" -->doIgnore
+                   ]
 myManageHook = fullManageHook <+> manageHook gnomeConfig <+> manageDocks
-               
+
 ------------------------------------------------------------------------
 -- Event handling
 
@@ -370,12 +375,9 @@ defaults = gnomeConfig {
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
-        layoutHook         = showWName myLayout,
+        layoutHook         = myLayout,
         manageHook         = myManageHook,
         handleEventHook    = myHandleEventHook,
         startupHook        = myStartupHook
-        {-logHook          = myLogHook, -} 
+        {-logHook          = myLogHook, -}
     }
-
-
-
