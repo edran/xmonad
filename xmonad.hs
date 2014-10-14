@@ -13,14 +13,14 @@ import XMonad.Hooks.EwmhDesktops
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
 import XMonad.Layout.Tabbed
-import XMonad.Layout.ShowWName    -- for showing workspace when switching
+-- import XMonad.Layout.ShowWName    -- for showing workspace when switching
 import XMonad.Layout.NoBorders    -- for no border in fullscreen window
 import XMonad.Layout.Grid
 import XMonad.Hooks.ManageHelpers -- for fullscreen support
 import XMonad.Prompt.Workspace
 import XMonad.Prompt
-import XMonad.Layout.MagicFocus
-import XMonad.Layout.Named
+-- import XMonad.Layout.MagicFocus
+-- import XMonad.Layout.Named
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -28,6 +28,7 @@ import qualified Data.Map        as M
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
+myTerminal :: String
 myTerminal      = "terminator"
 
 -- Whether focus follows the mouse pointer.
@@ -36,6 +37,7 @@ myFocusFollowsMouse = True -- True
 
 -- Width of the window border in pixels.
 --
+myBorderWidth :: Dimension
 myBorderWidth   = 1
 
 -- modMask lets you specify which modkey you want to use. The default
@@ -43,6 +45,7 @@ myBorderWidth   = 1
 -- ("right alt"), which does not conflict with emacs keybindings. The
 -- "windows key" is usually mod4Mask.
 --
+myModMask :: KeyMask
 myModMask       = mod4Mask
 
 -- The default number of workspaces (virtual screens) and their names.
@@ -56,7 +59,7 @@ myModMask       = mod4Mask
 --
 
 --myWorkspaces    = ["system","web","irc","4","5","files","7","8","9","10","code","testing","13","14","15","16","17"]
-
+myWorkspaces :: [String]
 myWorkspaces = ["1-Main", "2-Temp", "3-Work", "4-Misc", "5-IRC", "6-Media", "7", "8", "9"]
 
 -- Specify a workspace(s) to use focusFollowsMouse on (such as for use with gimp):
@@ -67,12 +70,16 @@ myWorkspaces = ["1-Main", "2-Temp", "3-Work", "4-Misc", "5-IRC", "6-Media", "7",
 
 -- Border colors for unfocused and focused windows, respectively.
 --
+myNormalBorderColor :: String
 myNormalBorderColor  = "#FFFFFF"
+myFocusedBorderColor :: String
 myFocusedBorderColor = "#FF0000"
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
+
+myKeys :: XConfig Layout -> M.Map (KeyMask, KeySym) (X ())
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
@@ -111,25 +118,25 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_Tab   ), windows W.focusUp  )
 
     -- Move focus to the next window
-    , ((modm,               xK_j     ), windows W.focusDown)
+    , ((modm,               xK_k     ), windows W.focusDown)
 
     -- Move focus to the previous window
-    , ((modm,               xK_k     ), windows W.focusUp  )
+    , ((modm,               xK_l     ), windows W.focusUp  )
 
     -- Swap the focused window and the master window
     , ((modm,               xK_Return), windows W.swapMaster)
 
     -- Swap the focused window with the next window
-    , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
+    , ((modm .|. shiftMask, xK_k     ), windows W.swapDown  )
 
     -- Swap the focused window with the previous window
-    , ((modm .|. shiftMask, xK_k     ), windows W.swapUp    )
+    , ((modm .|. shiftMask, xK_l     ), windows W.swapUp    )
 
     -- Shrink the master area
-    , ((modm,               xK_h     ), sendMessage Shrink)
+    , ((modm,               xK_j     ), sendMessage Shrink)
 
     -- Expand the master area
-    , ((modm,               xK_l     ), sendMessage Expand)
+    , ((modm,               xK_semicolon     ), sendMessage Expand)
 
     -- Push window back into tiling
     , ((modm,               xK_t     ), withFocused $ windows . W.sink)
@@ -152,16 +159,16 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
      , ((modm              , xK_bracketleft), sendMessage ToggleStruts)
 
     -- Quit xmonad
-    , ((modm .|. shiftMask, xK_q     ), io exitSuccess)
+    -- , ((modm .|. shiftMask, xK_q     ), io exitSuccess)
 
     -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
 
     -- Run printscreen
-    , ((0, xK_Print), spawn "mate-screenshot")
+    , ((0, xK_Print), spawn "gnome-screenshot")
 
     -- Run printscreen in interactive mode
-    , ((shiftMask, xK_Print), spawn "mate-screenshot -i")]
+    , ((shiftMask, xK_Print), spawn "gnome-screenshot -i")]
     ++
 
     --
@@ -171,7 +178,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- mod-shift-[1..9], Move client to workspace N
     --
     [((m .|. modm, k), windows $ f i)
-     | (i, k) <- zip (XMonad.workspaces conf) ([xK_1 .. xK_9])
+    | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
                                                -- ++ [xK_0,
                                                --     xK_a,
                                                --     xK_s,
@@ -197,18 +204,20 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 -- Mouse bindings: default actions bound to mouse events
 --
 
-myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
+myMouseBindings
+  :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
+myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
 
     -- mod-button1, Set the window to floating mode and move by dragging
-    [ ((modm, button1), (\w -> focus w >> mouseMoveWindow w
-                                       >> windows W.shiftMaster))
+    [ ((modm, button1), \w -> focus w >> mouseMoveWindow w
+                                       >> windows W.shiftMaster)
 
     -- mod-button2, Raise the window to the top of the stack
-    , ((modm, button2), (\w -> focus w >> windows W.shiftMaster))
+    , ((modm, button2), \w -> focus w >> windows W.shiftMaster)
 
     -- mod-button3, Set the window to floating mode and resize by dragging
-    , ((modm, button3), (\w -> focus w >> mouseResizeWindow w
-                                       >> windows W.shiftMaster))
+    , ((modm, button3), \w -> focus w >> mouseResizeWindow w
+                                       >> windows W.shiftMaster)
 
     -- you may also bind events to the mouse scroll wheel (button4 and button5)
     ]
@@ -231,6 +240,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- which denotes layout choice.
 --
 
+myTabConfig :: Theme
 myTabConfig = defaultTheme { fontName = "xft: Ubuntu-10"
                            , activeColor         =  "#272822"
                            , inactiveColor       =  "#272822"
@@ -257,7 +267,7 @@ preLayout = avoidStruts $ desktopLayoutModifiers
   where
 
     -- Magic Focus
-    mfocus = named "Magic Focus" (magicFocus (Mirror tiled))
+    -- mfocus = named "Magic Focus" (magicFocus (Mirror tiled))
 
     -- default tiling algorithm partitions the screen into two panes
     tiled   = Tall nmaster delta ratio
@@ -293,13 +303,15 @@ myLayout = smartBorders preLayout
 -- 'className' and 'resource' are used below.
 --
 
+fullManageHook :: Query (Endo WindowSet)
 fullManageHook = composeAll $
-                 [ isFullscreen --> doFullFloat ]
-                 ++[  className =? "Steam"          -->doFloat
-                   ,  className =? "steam"          -->doFloat --bigpicture-mode
-                   ,  className =? "Steam"          -->doIgnore
-                   ,  title     =? "plasma-desktop" -->doIgnore
-                   ]
+                 ( isFullscreen --> doFullFloat ) :
+                 [  className =? "Steam"          -->doFloat
+                 ,  className =? "steam"          -->doFloat --bigpicture-mode
+                 ,  className =? "Steam"          -->doIgnore
+                 ,  title     =? "plasma-desktop" -->doIgnore
+                 ]
+myManageHook :: Query (Endo WindowSet)
 myManageHook = fullManageHook <+> manageHook gnomeConfig <+> manageDocks
 
 ------------------------------------------------------------------------
@@ -314,6 +326,7 @@ myManageHook = fullManageHook <+> manageHook gnomeConfig <+> manageDocks
 -- It will add EWMH event handling to your custom event hooks by
 -- combining them with ewmhDesktopsEventHook.
 --
+myHandleEventHook :: Event -> X All
 myHandleEventHook = fullscreenEventHook -- <+> promoteWarp -- TODO: See magicFocus layout
 
 ------------------------------------------------------------------------
@@ -344,6 +357,7 @@ myHandleEventHook = fullscreenEventHook -- <+> promoteWarp -- TODO: See magicFoc
 -- It will add initialization of EWMH support to your custom startup
 -- hook by combining it with ewmhDesktopsStartup.
 --
+myStartupHook :: X ()
 myStartupHook = setWMName "LG3D" -- Makes Java run
 
 ------------------------------------------------------------------------
@@ -352,6 +366,7 @@ myStartupHook = setWMName "LG3D" -- Makes Java run
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 --main = xmonad defaults
+main :: IO ()
 main = xmonad defaults
 
 -- A structure containing your configuration settings, overriding

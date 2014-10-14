@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# add * /10 * * * * /home/edran/.xmonad/.dmenufm_path >> /var/log/dmenufm_path_output.log 2>&1
+# to crontab -e
+
+find -L ~/ -name '.*' -prune -o -print 2>/dev/null | sed 's/ /\\ /g' | sort -f > ~/.dmenufm_cache
