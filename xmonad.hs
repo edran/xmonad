@@ -21,32 +21,28 @@ import XMonad.Prompt.Workspace
 import XMonad.Prompt
 -- import XMonad.Layout.MagicFocus
 -- import XMonad.Layout.Named
-
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
--- The preferred terminal program, which is used in a binding below and by
--- certain contrib modules.
---
-myTerminal :: String
-myTerminal      = "terminator"
+  -- The preferred terminal program, which is used in a binding below and by
+  -- certain contrib modules.
+  --
+myTerminal = "terminator"
 
 -- Whether focus follows the mouse pointer.
-myFocusFollowsMouse :: Bool
-myFocusFollowsMouse = True -- True
+
+myFocusFollowsMouse = True
 
 -- Width of the window border in pixels.
 --
-myBorderWidth :: Dimension
-myBorderWidth   = 1
+myBorderWidth = 1
 
 -- modMask lets you specify which modkey you want to use. The default
 -- is mod1Mask ("left alt").  You may also consider using mod3Mask
 -- ("right alt"), which does not conflict with emacs keybindings. The
 -- "windows key" is usually mod4Mask.
 --
-myModMask :: KeyMask
-myModMask       = mod4Mask
+myModMask  = mod4Mask
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -59,7 +55,6 @@ myModMask       = mod4Mask
 --
 
 --myWorkspaces    = ["system","web","irc","4","5","files","7","8","9","10","code","testing","13","14","15","16","17"]
-myWorkspaces :: [String]
 myWorkspaces = ["1-Main", "2-Temp", "3-Work", "4-Misc", "5-IRC", "6-Media", "7", "8", "9"]
 
 -- Specify a workspace(s) to use focusFollowsMouse on (such as for use with gimp):
@@ -70,9 +65,7 @@ myWorkspaces = ["1-Main", "2-Temp", "3-Work", "4-Misc", "5-IRC", "6-Media", "7",
 
 -- Border colors for unfocused and focused windows, respectively.
 --
-myNormalBorderColor :: String
 myNormalBorderColor  = "#FFFFFF"
-myFocusedBorderColor :: String
 myFocusedBorderColor = "#FF0000"
 
 ------------------------------------------------------------------------
@@ -85,89 +78,89 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- launch a terminal
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf++" --working-directory=~")
 
-    -- launch dmenu
+      -- launch dmenu
     , ((modm,               xK_p     ), spawn "dmenu_run -nf \"#839496\" -nb \"#002b36\" -fn \"Droid Sans Mono-9\" -sf \"#dc322f\" -sb \"#073642\"")
     , ((modm .|. shiftMask, xK_p     ), spawn "sh /home/edran/.xmonad/dmenufm.sh")
 
 
-    -- launch a script to rotate the screen
-    -- , ((modm,               xK_slash ), spawn "sh /home/kit/.scripts/toggle_rotate.sh"  )
+      -- launch a script to rotate the screen
+      -- , ((modm,               xK_slash ), spawn "sh /home/kit/.scripts/toggle_rotate.sh"  )
 
-    -- launch gridselect
+      -- launch gridselect
     , ((modm, xK_g), goToSelected defaultGSConfig)
 
-    -- close focused window
+      -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
 
-    -- run xkill to terminate unruly processes
+      -- run xkill to terminate unruly processes
     , ((modm .|. shiftMask, xK_x     ), spawn "xkill")
 
-     -- Rotate through the available layout algorithms
+      -- Rotate through the available layout algorithms
     , ((modm,               xK_space ), sendMessage NextLayout)
 
-    --  Reset the layouts on the current workspace to default
+      --  Reset the layouts on the current workspace to default
     , ((modm .|. shiftMask, xK_space ), setLayout $ XMonad.layoutHook conf)
 
-    -- Resize viewed windows to the correct size
+      -- Resize viewed windows to the correct size
     , ((modm .|. shiftMask, xK_n     ), refresh)
 
-    -- Move focus to the next window
+      -- Move focus to the next window
     , ((modm,               xK_Tab   ), windows W.focusDown)
 
-    -- Move focus to the previous window
+      -- Move focus to the previous window
     , ((modm .|. shiftMask, xK_Tab   ), windows W.focusUp  )
 
-    -- Move focus to the next window
+      -- Move focus to the next window
     , ((modm,               xK_k     ), windows W.focusDown)
 
-    -- Move focus to the previous window
+      -- Move focus to the previous window
     , ((modm,               xK_l     ), windows W.focusUp  )
 
-    -- Swap the focused window and the master window
+      -- Swap the focused window and the master window
     , ((modm,               xK_Return), windows W.swapMaster)
 
-    -- Swap the focused window with the next window
+      -- Swap the focused window with the next window
     , ((modm .|. shiftMask, xK_k     ), windows W.swapDown  )
 
-    -- Swap the focused window with the previous window
+      -- Swap the focused window with the previous window
     , ((modm .|. shiftMask, xK_l     ), windows W.swapUp    )
 
-    -- Shrink the master area
+      -- Shrink the master area
     , ((modm,               xK_j     ), sendMessage Shrink)
 
-    -- Expand the master area
+      -- Expand the master area
     , ((modm,               xK_semicolon     ), sendMessage Expand)
 
-    -- Push window back into tiling
+      -- Push window back into tiling
     , ((modm,               xK_t     ), withFocused $ windows . W.sink)
 
-    -- Increment the number of windows in the master area
+      -- Increment the number of windows in the master area
     , ((modm              , xK_comma ), sendMessage (IncMasterN 1))
 
-    -- Deincrement the number of windows in the master area
+      -- Deincrement the number of windows in the master area
     , ((modm              , xK_period), sendMessage (IncMasterN (-1)))
 
-    -- Prompt for a workspace
+      -- Prompt for a workspace
     , ((modm .|. shiftMask, xK_t     ), workspacePrompt defaultXPConfig (windows . W.shift))
 
-    -- Lock the screen
-    --, ((modm .|. shiftMask, xK_l     ), spawn "mate-screensaver-command -l")
+      -- Lock the screen
+      --, ((modm .|. shiftMask, xK_l     ), spawn "mate-screensaver-command -l")
 
-    -- Toggle the status bar gap
-    -- Use this binding with avoidStruts from Hooks.ManageDocks.
-    -- See also the statusBar function from Hooks.DynamicLog.
-     , ((modm              , xK_bracketleft), sendMessage ToggleStruts)
+      -- Toggle the status bar gap
+      -- Use this binding with avoidStruts from Hooks.ManageDocks.
+      -- See also the statusBar function from Hooks.DynamicLog.
+    , ((modm              , xK_bracketleft), sendMessage ToggleStruts)
 
-    -- Quit xmonad
-    -- , ((modm .|. shiftMask, xK_q     ), io exitSuccess)
+      -- Quit xmonad
+      -- , ((modm .|. shiftMask, xK_q     ), io exitSuccess)
 
-    -- Restart xmonad
+      -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
 
-    -- Run printscreen
+      -- Run printscreen
     , ((0, xK_Print), spawn "gnome-screenshot")
 
-    -- Run printscreen in interactive mode
+      -- Run printscreen in interactive mode
     , ((shiftMask, xK_Print), spawn "gnome-screenshot -i")]
     ++
 
@@ -179,14 +172,14 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
     [((m .|. modm, k), windows $ f i)
     | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
-                                               -- ++ [xK_0,
-                                               --     xK_a,
-                                               --     xK_s,
-                                               --     xK_d,
-                                               --     xK_f,
-                                               --     xK_b,
-                                               --     xK_n,
-                                               --     xK_m])
+                -- ++ [xK_0,
+                --     xK_a,
+                --     xK_s,
+                --     xK_d,
+                --     xK_f,
+                --     xK_b,
+                --     xK_n,
+                --     xK_m])
     , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
     ++
 
@@ -196,16 +189,15 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
 
     [((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
-     | (key, sc) <- zip [xK_e, xK_w, xK_r] [0..]
+    | (key, sc) <- zip [xK_e, xK_w, xK_r] [0..]
     , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
 
 
-------------------------------------------------------------------------
--- Mouse bindings: default actions bound to mouse events
---
+    ------------------------------------------------------------------------
+    -- Mouse bindings: default actions bound to mouse events
+    --
 
-myMouseBindings
-  :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
+myMouseBindings :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
 
     -- mod-button1, Set the window to floating mode and move by dragging
